@@ -3,7 +3,7 @@
     {
       "id": "ryu",
       "name": "Ryu",
-      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+      "avatar": "https://tiermaker.com/images/templates/5457901597562986.jpg",
       "sprite": "https://vignette.wikia.nocookie.net/streetfighter/images/2/2f/Ryu_sf2.gif",
       "hp": 100,
       "attacks": [
