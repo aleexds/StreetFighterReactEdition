@@ -15,15 +15,20 @@ export const Battle = () => {
   const [matchResult, setMatchResult] = useState(null);
 
   useEffect(() => {
-    fetch(`https://dragonball-api.com/api/characters/${id}`)
+    // Cargar el Pokémon seleccionado desde la PokeAPI por su ID
+    fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setPlayer({
-          name: data.name,
-          hp: 100
+          id: data.id,
+          name: data.name.toUpperCase(),
+          hp: 100,
+          // Sprite animado GIF oficial de la PokeAPI (Showdown)
+          spriteIdle: data.sprites.other['showdown']?.front_default || data.sprites.front_default,
+          spriteAttack: data.sprites.other['showdown']?.back_default || data.sprites.back_default || data.sprites.front_default
         });
       })
-      .catch((err) => console.error('Error al obtener personaje:', err));
+      .catch((err) => console.error('Error al obtener Pokémon:', err));
   }, [id]);
 
   const sendToN8nWebhook = useCallback(async (finalResult, finalScore) => {
@@ -32,7 +37,7 @@ export const Battle = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jugador: player?.name || 'Guerrero Z',
+          jugador: player?.name || 'Entrenador Pokémon',
           resultado: finalResult,
           puntaje: Math.round(finalScore),
           fecha: new Date().toISOString()
@@ -56,16 +61,16 @@ export const Battle = () => {
     sendToN8nWebhook(result, finalHp * 10);
   }, [isGameOver, sendToN8nWebhook]);
 
-  if (!player) return <h2 style={{ textAlign: 'center' }}>Elevando el Ki...</h2>;
+  if (!player) return <h2 style={{ textAlign: 'center', color: '#f1c40f', marginTop: '40px' }}>Entrando a la Arena Pokémon...</h2>;
 
   return (
     <div>
       <Navbar />
-      <h2 style={{ textAlign: 'center', color: '#f39c12' }}>Torneo del Poder en Tiempo Real</h2>
+      <h2 style={{ textAlign: 'center', color: '#27ae60' }}>Combate Pokémon en Tiempo Real</h2>
       
-      <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', margin: '10px 0' }}>
         <HealthBar fighterName={player.name} currentHp={playerHp} maxHp={100} />
-        <HealthBar fighterName="Vegeta (CPU)" currentHp={cpuHp} maxHp={100} />
+        <HealthBar fighterName="CHARIZARD (CPU)" currentHp={cpuHp} maxHp={100} />
       </div>
 
       {!isGameOver ? (
@@ -76,10 +81,19 @@ export const Battle = () => {
         />
       ) : (
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
-          <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO ELIMINADO'}</h1>
+          <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO DERROTADO'}</h1>
           <button 
             onClick={() => navigate('/leaderboard')} 
-            style={{ padding: '12px 24px', fontSize: '18px', cursor: 'pointer', backgroundColor: '#e67e22', color: '#fff', border: 'none', borderRadius: '5px' }}
+            style={{ 
+              padding: '12px 24px', 
+              fontSize: '18px', 
+              cursor: 'pointer', 
+              backgroundColor: '#27ae60', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '6px',
+              fontWeight: 'bold' 
+            }}
           >
             Ver Tabla de Posiciones
           </button>
