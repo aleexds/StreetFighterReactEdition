@@ -3,7 +3,7 @@
     {
       "id": "ryu",
       "name": "Ryu",
-      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+      "avatar": "https://images.wikidex.org/thumb/f/f6/Ryu_SF6.png/250px-Ryu_SF6.png",
       "hp": 100,
       "attacks": [
         { "id": 1, "name": "Hadoken", "damage": 25, "cooldown": 0 },
@@ -14,12 +14,22 @@
     {
       "id": "chunli",
       "name": "Chun-Li",
-      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png",
+      "avatar": "https://images.wikidex.org/thumb/8/87/Chun-Li_SF6.png/250px-Chun-Li_SF6.png",
       "hp": 90,
       "attacks": [
         { "id": 1, "name": "Kikosho", "damage": 20, "cooldown": 0 },
         { "id": 2, "name": "Hyakuretsukyaku", "damage": 30, "cooldown": 0 },
         { "id": 3, "name": "Spinning Bird Kick", "damage": 40, "cooldown": 2 }
+      ]
+    },
+    {
+      "id": "ken",
+      "name": "Ken Masters",
+      "avatar": "https://images.wikidex.org/thumb/0/08/Ken_SF6.png/250px-Ken_SF6.png",
+      "hp": 100,
+      "attacks": [
+        { "id": 1, "name": "Hadoken", "damage": 20, "cooldown": 0 },
+        { "id": 2, "name": "Shoryuken Flamígero", "damage": 38, "cooldown": 1 }
       ]
     }
   ],
