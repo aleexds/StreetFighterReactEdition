@@ -1,46 +1,69 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 
 export const SelectFighter = () => {
-  // 1. Corregido: era useState en lugar de meState
   const [fighters, setFighters] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 2. Corregido: estructura limpia del fetch sin ternarios
-    fetch('http://localhost:3001/fighters')
-      .then((res) => {
-        if (!res.ok) throw new Error('Error al obtener los peleadores');
-        return res.json();
-      })
+    // Consumo de la Dragon Ball API pública
+    fetch('https://dragonball-api.com/api/characters?limit=10')
+      .then((res) => res.json())
       .then((data) => {
-        setFighters(data);
-        setLoading(false);
+        // Mapeamos los datos de la API a la estructura que necesita nuestro juego
+        const formattedFighters = data.items.map((char) => ({
+          id: char.id,
+          name: char.name,
+          avatar: char.image,
+          ki: char.ki,
+          race: char.race
+        }));
+        setFighters(formattedFighters);
       })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+      .catch((err) => console.error('Error cargando personajes de Dragon Ball:', err));
   }, []);
-
-  if (loading) return <h2>Cargando lista de peleadores...</h2>;
-  if (error) return <h2>Error: {error}</h2>;
 
   return (
     <div>
       <Navbar />
-      <h2>Selecciona tu Peleador</h2>
-      <div style={{ display: 'flex', gap: '20px' }}>
-        {fighters.map((f) => (
-          <div key={f.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }}>
-            <h3>{f.name}</h3>
-            <img src={f.avatar} alt={f.name} width="100" />
-            <br />
-            <button onClick={() => navigate(`/pelea/${f.id}`)} style={{ marginTop: '10px' }}>
-              Elegir {f.name}
+      <h2 style={{ textAlign: 'center', margin: '20px 0' }}>Selecciona tu Guerrero Z</h2>
+      
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
+        {fighters.map((fighter) => (
+          <div 
+            key={fighter.id} 
+            style={{
+              border: '2px solid #f39c12',
+              borderRadius: '10px',
+              padding: '15px',
+              width: '180px',
+              textAlign: 'center',
+              backgroundColor: '#1a1a1a',
+              boxShadow: '0 4px 8px rgba(243, 156, 18, 0.3)'
+            }}
+          >
+            <img 
+              src={fighter.avatar} 
+              alt={fighter.name} 
+              style={{ height: '180px', objectFit: 'contain', marginBottom: '10px' }} 
+            />
+            <h3 style={{ color: '#fff', margin: '5px 0' }}>{fighter.name}</h3>
+            <p style={{ color: '#aaa', fontSize: '12px' }}>Raza: {fighter.race}</p>
+            <button 
+              onClick={() => navigate(`/pelea/${fighter.id}`)}
+              style={{
+                backgroundColor: '#e67e22',
+                color: '#fff',
+                border: 'none',
+                padding: '8px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                marginTop: '10px'
+              }}
+            >
+              ¡Pelear!
             </button>
           </div>
         ))}
