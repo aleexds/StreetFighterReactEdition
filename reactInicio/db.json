@@ -3,7 +3,8 @@
     {
       "id": "ryu",
       "name": "Ryu",
-      "avatar": "https://images.wikidex.org/thumb/f/f6/Ryu_SF6.png/250px-Ryu_SF6.png",
+      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+      "sprite": "https://vignette.wikia.nocookie.net/streetfighter/images/2/2f/Ryu_sf2.gif",
       "hp": 100,
       "attacks": [
         { "id": 1, "name": "Hadoken", "damage": 25, "cooldown": 0 },
@@ -14,7 +15,8 @@
     {
       "id": "chunli",
       "name": "Chun-Li",
-      "avatar": "https://images.wikidex.org/thumb/8/87/Chun-Li_SF6.png/250px-Chun-Li_SF6.png",
+      "avatar": "https://vignette.wikia.nocookie.net/streetfighter/images/a/a2/Chunli_sf2.gif",
+      "sprite": "https://vignette.wikia.nocookie.net/streetfighter/images/a/a2/Chunli_sf2.gif",
       "hp": 90,
       "attacks": [
         { "id": 1, "name": "Kikosho", "damage": 20, "cooldown": 0 },
@@ -25,7 +27,8 @@
     {
       "id": "ken",
       "name": "Ken Masters",
-      "avatar": "https://images.wikidex.org/thumb/0/08/Ken_SF6.png/250px-Ken_SF6.png",
+      "avatar": "https://vignette.wikia.nocookie.net/streetfighter/images/c/c2/Ken_sf2.gif",
+      "sprite": "https://vignette.wikia.nocookie.net/streetfighter/images/c/c2/Ken_sf2.gif",
       "hp": 100,
       "attacks": [
         { "id": 1, "name": "Hadoken", "damage": 20, "cooldown": 0 },
