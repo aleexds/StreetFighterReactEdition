@@ -1,0 +1,29 @@
+{
+  "fighters": [
+    {
+      "id": "ryu",
+      "name": "Ryu",
+      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+      "hp": 100,
+      "attacks": [
+        { "id": 1, "name": "Hadoken", "damage": 25, "cooldown": 0 },
+        { "id": 2, "name": "Shoryuken", "damage": 35, "cooldown": 1 },
+        { "id": 3, "name": "Tatsumaki", "damage": 20, "cooldown": 0 }
+      ]
+    },
+    {
+      "id": "chunli",
+      "name": "Chun-Li",
+      "avatar": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png",
+      "hp": 90,
+      "attacks": [
+        { "id": 1, "name": "Kikosho", "damage": 20, "cooldown": 0 },
+        { "id": 2, "name": "Hyakuretsukyaku", "damage": 30, "cooldown": 0 },
+        { "id": 3, "name": "Spinning Bird Kick", "damage": 40, "cooldown": 2 }
+      ]
+    }
+  ],
+  "scores": [
+    { "id": 1, "player": "Alex", "score": 1500, "result": "Victoria" }
+  ]
+}
