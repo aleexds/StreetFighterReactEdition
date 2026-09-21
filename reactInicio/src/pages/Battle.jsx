@@ -15,13 +15,15 @@ export const Battle = () => {
   const [matchResult, setMatchResult] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/fighters/${id}`)
+    fetch(`https://dragonball-api.com/api/characters/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        setPlayer(data);
-        setPlayerHp(data.hp);
+        setPlayer({
+          name: data.name,
+          hp: 100
+        });
       })
-      .catch((err) => console.error('Error al cargar el peleador:', err));
+      .catch((err) => console.error('Error al obtener personaje:', err));
   }, [id]);
 
   const sendToN8nWebhook = useCallback(async (finalResult, finalScore) => {
@@ -30,15 +32,15 @@ export const Battle = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jugador: player?.name || 'Jugador 1',
+          jugador: player?.name || 'Guerrero Z',
           resultado: finalResult,
           puntaje: Math.round(finalScore),
           fecha: new Date().toISOString()
         })
       });
-      console.log('Resultado enviado a n8n con éxito');
+      console.log('Resultado enviado a n8n');
     } catch (err) {
-      console.error('Error enviando datos a n8n:', err);
+      console.error('Error enviando a n8n:', err);
     }
   }, [player]);
 
@@ -54,16 +56,16 @@ export const Battle = () => {
     sendToN8nWebhook(result, finalHp * 10);
   }, [isGameOver, sendToN8nWebhook]);
 
-  if (!player) return <h2>Cargando arena de combate...</h2>;
+  if (!player) return <h2 style={{ textAlign: 'center' }}>Elevando el Ki...</h2>;
 
   return (
     <div>
       <Navbar />
-      <h2 style={{ textAlign: 'center' }}>Arena Arcade en Tiempo Real</h2>
+      <h2 style={{ textAlign: 'center', color: '#f39c12' }}>Torneo del Poder en Tiempo Real</h2>
       
       <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-        <HealthBar fighterName={player.name} currentHp={playerHp} maxHp={player.hp} />
-        <HealthBar fighterName="M. Bison (CPU)" currentHp={cpuHp} maxHp={100} />
+        <HealthBar fighterName={player.name} currentHp={playerHp} maxHp={100} />
+        <HealthBar fighterName="Vegeta (CPU)" currentHp={cpuHp} maxHp={100} />
       </div>
 
       {!isGameOver ? (
@@ -74,10 +76,10 @@ export const Battle = () => {
         />
       ) : (
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
-          <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO DERROTADO'}</h1>
+          <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO ELIMINADO'}</h1>
           <button 
             onClick={() => navigate('/leaderboard')} 
-            style={{ padding: '12px 24px', fontSize: '18px', cursor: 'pointer' }}
+            style={{ padding: '12px 24px', fontSize: '18px', cursor: 'pointer', backgroundColor: '#e67e22', color: '#fff', border: 'none', borderRadius: '5px' }}
           >
             Ver Tabla de Posiciones
           </button>
