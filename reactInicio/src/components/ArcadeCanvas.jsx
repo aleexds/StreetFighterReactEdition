@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-// GIFs Animados oficiales transparentes de la PokeAPI (Showdown Sprites)
-const POKEMON_SPRITES = {
-  // Pikachu (Jugador) - Frente y Ataque (Espalda)
-  playerIdle: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif',
-  playerAttack: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/back/25.gif',
-  
-  // Charizard (CPU) - Frente y Ataque (Espalda)
+// Oponente por defecto (Charizard)
+const CPU_SPRITES = {
   cpuIdle: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif',
   cpuAttack: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/back/6.gif'
 };
@@ -44,7 +39,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
     keys: {}
   });
 
-  // 1. Precarga limpia de los GIFs de la PokeAPI
+  // Cargar las imágenes del Pokémon seleccionado
   useEffect(() => {
     let isMounted = true;
 
@@ -53,10 +48,13 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
     const cIdle = new Image();
     const cAttack = new Image();
 
-    pIdle.src = POKEMON_SPRITES.playerIdle;
-    pAttack.src = POKEMON_SPRITES.playerAttack;
-    cIdle.src = POKEMON_SPRITES.cpuIdle;
-    cAttack.src = POKEMON_SPRITES.cpuAttack;
+    // Sprite del jugador dinámico (Bulbasaur, Charmander, etc.)
+    pIdle.src = playerFighter?.spriteIdle || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif';
+    pAttack.src = playerFighter?.spriteAttack || pIdle.src;
+
+    // Sprite de la CPU (Charizard)
+    cIdle.src = CPU_SPRITES.cpuIdle;
+    cAttack.src = CPU_SPRITES.cpuAttack;
 
     let loadedCount = 0;
     const checkLoaded = () => {
@@ -73,7 +71,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
     return () => { isMounted = false; };
   }, [playerFighter]);
 
-  // 2. Loop del juego en el Canvas
+  // Bucle principal del Canvas
   useEffect(() => {
     if (!imagesLoaded) return;
 
@@ -97,7 +95,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         return;
       }
 
-      // Movimiento Jugador
+      // Movimiento
       if (keys['a'] && player.x > 0) player.x -= 6;
       if (keys['d'] && player.x < canvas.width - player.width) player.x += 6;
 
@@ -131,7 +129,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         setTimeout(() => { cpu.isAttacking = false; }, 400);
       }
 
-      // Detección de daño
+      // Daño
       if (player.isAttacking && distance < 70) {
         cpu.hp = Math.max(0, cpu.hp - 1.2);
         cpu.x += 3;
@@ -144,22 +142,22 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         if (onHpChange) onHpChange(player.hp, cpu.hp);
       }
 
-      // --- DIBUJAR EN CANVAS ---
+      // Renderizado en Canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Fondo del Estadio Pokémon
+      // Fondo
       ctx.fillStyle = '#1e272c';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#27ae60'; // Suelo verde
+      ctx.fillStyle = '#27ae60';
       ctx.fillRect(0, 260, canvas.width, 90);
 
-      // Jugador (Pikachu)
+      // Jugador
       const playerSprite = player.isAttacking ? spritesRef.current.pAttack : spritesRef.current.pIdle;
       if (playerSprite) {
         ctx.drawImage(playerSprite, player.x, player.y, player.width, player.height);
       }
 
-      // Ataque de Rayo / Impactrueno
+      // Efecto Ataque Jugador
       if (player.isAttacking) {
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
@@ -167,13 +165,13 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         ctx.fill();
       }
 
-      // CPU (Charizard)
+      // CPU
       const cpuSprite = cpu.isAttacking ? spritesRef.current.cAttack : spritesRef.current.cIdle;
       if (cpuSprite) {
         ctx.drawImage(cpuSprite, cpu.x, cpu.y, cpu.width, cpu.height);
       }
 
-      // Ataque Lanzallamas
+      // Efecto Ataque CPU
       if (cpu.isAttacking) {
         ctx.fillStyle = '#e74c3c';
         ctx.beginPath();
@@ -194,7 +192,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
   }, [imagesLoaded, playerFighter, onHpChange, onGameOver]);
 
   if (!imagesLoaded) {
-    return <h3 style={{ textAlign: 'center', color: '#f1c40f' }}>⚡ Entrando a la arena Pokémon...</h3>;
+    return <h3 style={{ textAlign: 'center', color: '#f1c40f' }}>⚡ Entrando a la arena...</h3>;
   }
 
   return (
@@ -206,7 +204,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         style={{ border: '4px solid #27ae60', borderRadius: '8px', backgroundColor: '#000' }}
       />
       <p style={{ color: '#aaa', fontSize: '14px' }}>
-        ⚡ <strong>Controles:</strong> [A / D] Moverse | [W / Espacio] Saltar | [J / K] Impactrueno
+        ⚡ <strong>Controles:</strong> [A / D] Moverse | [W / Espacio] Saltar | [J / K] Atacar
       </p>
     </div>
   );
