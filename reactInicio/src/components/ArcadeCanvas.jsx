@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { playSound } from '../utils/sound';
 
 // Oponente por defecto (Charizard)
 const CPU_SPRITES = {
@@ -9,12 +10,16 @@ const CPU_SPRITES = {
 export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
   const canvasRef = useRef(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  
   const spritesRef = useRef({
     pIdle: null,
     pAttack: null,
     cIdle: null,
     cAttack: null
   });
+
+  // Referencia para controlar la frecuencia de los sonidos de golpe y evitar saturación
+  const lastSoundTimeRef = useRef(0);
 
   const gameStateRef = useRef({
     player: {
@@ -39,7 +44,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
     keys: {}
   });
 
-  // Cargar las imágenes del Pokémon seleccionado
+  // 1. Cargar las imágenes del Pokémon seleccionado y de la CPU
   useEffect(() => {
     let isMounted = true;
 
@@ -65,13 +70,15 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
       }
     };
 
-    pIdle.onload = checkLoaded; pAttack.onload = checkLoaded;
-    cIdle.onload = checkLoaded; cAttack.onload = checkLoaded;
+    pIdle.onload = checkLoaded; 
+    pAttack.onload = checkLoaded;
+    cIdle.onload = checkLoaded; 
+    cAttack.onload = checkLoaded;
 
     return () => { isMounted = false; };
   }, [playerFighter]);
 
-  // Bucle principal del Canvas
+  // 2. Bucle principal del Canvas
   useEffect(() => {
     if (!imagesLoaded) return;
 
@@ -85,6 +92,15 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
+    // Reproduce el sonido de impacto evitando superposiciones muy rápidas
+    const playHitSoundThrottled = () => {
+      const now = Date.now();
+      if (now - lastSoundTimeRef.current > 220) {
+        playSound('hit');
+        lastSoundTimeRef.current = now;
+      }
+    };
+
     const updateGame = () => {
       const state = gameStateRef.current;
       const { player, cpu, keys } = state;
@@ -95,7 +111,7 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         return;
       }
 
-      // Movimiento
+      // Movimiento Jugador
       if (keys['a'] && player.x > 0) player.x -= 6;
       if (keys['d'] && player.x < canvas.width - player.width) player.x += 6;
 
@@ -129,35 +145,37 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         setTimeout(() => { cpu.isAttacking = false; }, 400);
       }
 
-      // Daño
+      // --- DETECCIÓN DE DAÑO Y EFECTOS DE SONIDO DE GOLPE ---
       if (player.isAttacking && distance < 70) {
         cpu.hp = Math.max(0, cpu.hp - 1.2);
         cpu.x += 3;
+        playHitSoundThrottled(); // 🔊 Sonido al golpear
         if (onHpChange) onHpChange(player.hp, cpu.hp);
       }
 
       if (cpu.isAttacking && distance < 70) {
         player.hp = Math.max(0, player.hp - 0.9);
         player.x -= 3;
+        playHitSoundThrottled(); // 🔊 Sonido al recibir golpe
         if (onHpChange) onHpChange(player.hp, cpu.hp);
       }
 
-      // Renderizado en Canvas
+      // --- DIBUJAR EN CANVAS ---
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Fondo
+      // Fondo de la arena
       ctx.fillStyle = '#1e272c';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#27ae60';
+      ctx.fillStyle = '#27ae60'; // Piso verde
       ctx.fillRect(0, 260, canvas.width, 90);
 
-      // Jugador
+      // Renderizar Jugador
       const playerSprite = player.isAttacking ? spritesRef.current.pAttack : spritesRef.current.pIdle;
       if (playerSprite) {
         ctx.drawImage(playerSprite, player.x, player.y, player.width, player.height);
       }
 
-      // Efecto Ataque Jugador
+      // Efecto visual de Ataque Jugador
       if (player.isAttacking) {
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
@@ -165,13 +183,13 @@ export const ArcadeCanvas = ({ playerFighter, onHpChange, onGameOver }) => {
         ctx.fill();
       }
 
-      // CPU
+      // Renderizar CPU
       const cpuSprite = cpu.isAttacking ? spritesRef.current.cAttack : spritesRef.current.cIdle;
       if (cpuSprite) {
         ctx.drawImage(cpuSprite, cpu.x, cpu.y, cpu.width, cpu.height);
       }
 
-      // Efecto Ataque CPU
+      // Efecto visual de Ataque CPU
       if (cpu.isAttacking) {
         ctx.fillStyle = '#e74c3c';
         ctx.beginPath();
