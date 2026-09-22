@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
+import { playSound } from '../utils/sound';
 
 export const SelectFighter = () => {
   const [fighters, setFighters] = useState([]);
@@ -12,7 +13,7 @@ export const SelectFighter = () => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=12')
       .then((res) => res.json())
       .then(async (data) => {
-        // Obtenemos los detalles de cada Pokémon para traer sus imágenes
+        // Obtenemos los detalles individuales para extraer imágenes e información
         const detailedPokemon = await Promise.all(
           data.results.map(async (poke) => {
             const res = await fetch(poke.url);
@@ -30,7 +31,7 @@ export const SelectFighter = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Error cargando Pokémon:', err);
+        console.error('Error cargando la lista de Pokémon:', err);
         setLoading(false);
       });
   }, []);
@@ -40,7 +41,7 @@ export const SelectFighter = () => {
       <div>
         <Navbar />
         <h2 style={{ textAlign: 'center', marginTop: '40px', color: '#f1c40f' }}>
-          ⚡ Cargando Lista de Pokémon...
+          ⚡ Cargando lista de Pokémon...
         </h2>
       </div>
     );
@@ -75,9 +76,12 @@ export const SelectFighter = () => {
             <h3 style={{ color: '#fff', margin: '5px 0', fontSize: '18px' }}>{fighter.name}</h3>
             <p style={{ color: '#aaa', fontSize: '12px', margin: '2px 0' }}>Tipo: {fighter.type}</p>
             <p style={{ color: '#2ecc71', fontSize: '12px', fontWeight: 'bold' }}>HP Base: {fighter.hp}</p>
-            
+
             <button
-              onClick={() => navigate(`/pelea/${fighter.id}`)}
+              onClick={() => {
+                playSound('buttonClick'); // 🔊 Efecto de sonido al seleccionar
+                navigate(`/pelea/${fighter.id}`);
+              }}
               style={{
                 backgroundColor: '#27ae60',
                 color: '#fff',
