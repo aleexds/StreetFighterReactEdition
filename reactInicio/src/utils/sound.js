@@ -1,54 +1,109 @@
-// URLs estables y 100% funcionales para efectos y música
-const SFX_URLS = {
-  buttonClick: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
-  hit: 'https://assets.mixkit.co/active_storage/sfx/2152/2152-preview.mp3',
-  ko: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
-  bgm: 'https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3'
+// Contexto de audio Web Audio API (Sintetizador integrado en el navegador)
+let audioCtx = null;
+let bgmInterval = null;
+
+const getAudioContext = () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
 };
 
-// Precargar audio en memoria
-const audioCache = {
-  buttonClick: new Audio(SFX_URLS.buttonClick),
-  hit: new Audio(SFX_URLS.hit),
-  ko: new Audio(SFX_URLS.ko),
-  bgm: new Audio(SFX_URLS.bgm)
-};
-
-// Configuración de la música de fondo
-audioCache.bgm.loop = true;
-audioCache.bgm.volume = 0.2;
-
+// Generador de efectos de sonido sintetizados
 export const playSound = (type) => {
-  const sound = audioCache[type];
-  if (!sound) return;
+  try {
+    const ctx = getAudioContext();
 
-  // Reiniciar el audio si ya se estaba reproduciendo
-  sound.currentTime = 0;
-  sound.volume = type === 'hit' ? 0.5 : type === 'ko' ? 0.8 : 0.4;
-  
-  sound.play().catch((err) => console.log(`Audio ${type} esperando interacción:`, err));
-};
-
-export const startBGM = () => {
-  audioCache.bgm.currentTime = 0;
-  
-  // Promesa para iniciar la música tras desbloquear el navegador
-  const playPromise = audioCache.bgm.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(() => {
-      // Si el navegador lo bloquea, se activa en el primer clic dentro de la página
-      const unlockAudio = () => {
-        audioCache.bgm.play();
-        window.removeEventListener('click', unlockAudio);
-        window.removeEventListener('keydown', unlockAudio);
-      };
-      window.addEventListener('click', unlockAudio);
-      window.addEventListener('keydown', unlockAudio);
-    });
+    if (type === 'buttonClick') {
+      // Clic de botón (Pitched Beep)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } 
+    else if (type === 'hit') {
+      // Golpe / Impacto (Noise / Punch)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.12);
+    } 
+    else if (type === 'ko') {
+      // Sonido de K.O. / Final de partida (Retro Defeat Scale)
+      const notes = [400, 350, 300, 200];
+      notes.forEach((freq, index) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const startTime = ctx.currentTime + index * 0.15;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.3, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.2);
+      });
+    }
+  } catch (e) {
+    console.log('Error al reproducir audio:', e);
   }
 };
 
+// Música de fondo 8-bit sintetizada (Melodía de Pelea Arcade)
+export const startBGM = () => {
+  stopBGM(); // Limpiar cualquier música anterior
+  
+  const ctx = getAudioContext();
+  const melody = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66]; // Do - Re - Mi - Fa - Sol
+  let noteIndex = 0;
+
+  bgmInterval = setInterval(() => {
+    try {
+      if (ctx.state === 'running') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'square'; // Sonido clásico de consola 8-bits
+        osc.frequency.setValueAtTime(melody[noteIndex], ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.05, ctx.currentTime); // Volumen suave
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+        
+        noteIndex = (noteIndex + 1) % melody.length;
+      }
+    } catch (e) {
+      console.log('Error en BGM:', e);
+    }
+  }, 200); // Ritmo arcade constante
+};
+
 export const stopBGM = () => {
-  audioCache.bgm.pause();
-  audioCache.bgm.currentTime = 0;
+  if (bgmInterval) {
+    clearInterval(bgmInterval);
+    bgmInterval = null;
+  }
 };
