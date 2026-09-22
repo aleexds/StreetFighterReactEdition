@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { HealthBar } from '../components/HealthBar';
 import { ArcadeCanvas } from '../components/ArcadeCanvas';
-import { playSound, startBGM, stopBGM } from '../utils/sound'; // 🎵 Importamos el módulo de sonido
+import { playSound, startBGM, stopBGM } from '../utils/sound';
 
 export const Battle = () => {
   const { id } = useParams();
@@ -15,14 +15,15 @@ export const Battle = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
 
-  // Iniciar Música de Fondo (BGM) al montar la arena de combate
+  // Iniciar la música de fondo al entrar a la pelea y detenerla al salir
   useEffect(() => {
     startBGM();
     return () => {
-      stopBGM(); // Detener música si el jugador cambia de página
+      stopBGM();
     };
   }, []);
 
+  // Cargar el Pokémon seleccionado
   useEffect(() => {
     fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
       .then((res) => res.json())
@@ -61,12 +62,15 @@ export const Battle = () => {
     setCpuHp(Math.round(newCpuHp));
   }, []);
 
+  // Manejar el final de la partida (Detener BGM y sonar K.O.)
   const handleGameOver = useCallback((result, finalHp) => {
     if (isGameOver) return;
     setIsGameOver(true);
     setMatchResult(result);
-    stopBGM(); // Detener música al terminar
-    playSound('ko'); // 🔊 Efecto de K.O. / Final de partida
+    
+    stopBGM();       // Detiene la música de fondo
+    playSound('ko'); // Reproduce el sonido de K.O.
+    
     sendToN8nWebhook(result, finalHp * 10);
   }, [isGameOver, sendToN8nWebhook]);
 
@@ -93,7 +97,7 @@ export const Battle = () => {
           <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO DERROTADO'}</h1>
           <button 
             onClick={() => {
-              playSound('buttonClick'); // 🔊 Sonido al hacer clic
+              playSound('buttonClick');
               navigate('/leaderboard');
             }} 
             style={{ 
