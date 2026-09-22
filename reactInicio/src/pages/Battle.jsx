@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { HealthBar } from '../components/HealthBar';
 import { ArcadeCanvas } from '../components/ArcadeCanvas';
+import { playSound, startBGM, stopBGM } from '../utils/sound'; // 🎵 Importamos el módulo de sonido
 
 export const Battle = () => {
   const { id } = useParams();
@@ -14,8 +15,15 @@ export const Battle = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
 
+  // Iniciar Música de Fondo (BGM) al montar la arena de combate
   useEffect(() => {
-    // Cargar el Pokémon seleccionado desde la PokeAPI por su ID
+    startBGM();
+    return () => {
+      stopBGM(); // Detener música si el jugador cambia de página
+    };
+  }, []);
+
+  useEffect(() => {
     fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -23,7 +31,6 @@ export const Battle = () => {
           id: data.id,
           name: data.name.toUpperCase(),
           hp: 100,
-          // Sprite animado GIF oficial de la PokeAPI (Showdown)
           spriteIdle: data.sprites.other['showdown']?.front_default || data.sprites.front_default,
           spriteAttack: data.sprites.other['showdown']?.back_default || data.sprites.back_default || data.sprites.front_default
         });
@@ -58,6 +65,8 @@ export const Battle = () => {
     if (isGameOver) return;
     setIsGameOver(true);
     setMatchResult(result);
+    stopBGM(); // Detener música al terminar
+    playSound('ko'); // 🔊 Efecto de K.O. / Final de partida
     sendToN8nWebhook(result, finalHp * 10);
   }, [isGameOver, sendToN8nWebhook]);
 
@@ -83,7 +92,10 @@ export const Battle = () => {
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
           <h1>{matchResult === 'Victoria' ? '🏆 ¡VICTORIA K.O.!' : '💀 HAS SIDO DERROTADO'}</h1>
           <button 
-            onClick={() => navigate('/leaderboard')} 
+            onClick={() => {
+              playSound('buttonClick'); // 🔊 Sonido al hacer clic
+              navigate('/leaderboard');
+            }} 
             style={{ 
               padding: '12px 24px', 
               fontSize: '18px', 
